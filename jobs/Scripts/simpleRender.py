@@ -375,7 +375,7 @@ def main(args):
     system_pl = platform.system()
     if system_pl == "Windows":
         cmdRun = """
-		  set MAYA_CMD_FILE_OUTPUT=%cd%/renderTool.log 
+		  set MAYA_CMD_FILE_OUTPUT=%cd%/renderTool.log
 		  set PYTHONPATH=%cd%;PYTHONPATH
 		  set MAYA_SCRIPT_PATH=%cd%;%MAYA_SCRIPT_PATH%
 		  "{tool}" -command "python(\\"import base_functions\\");"
