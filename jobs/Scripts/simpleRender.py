@@ -20,14 +20,11 @@ from jobs_launcher.core.system_info import get_gpu
 
 sys.path.append(
     os.path.abspath(
-        os.path.join(os.path.dirname(__file__), os.path.pardir, os.path.pardir)
-    )
-)
-
+        os.path.join(os.path.dirname(__file__), os.path.pardir,
+                     os.path.pardir)))
 
 ROOT_DIR = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), os.path.pardir, os.path.pardir)
-)
+    os.path.join(os.path.dirname(__file__), os.path.pardir, os.path.pardir))
 PROCESS = ["Maya", "maya.exe"]
 
 if platform.system() == "Darwin":
@@ -41,11 +38,11 @@ def get_windows_titles():
     try:
         if platform.system() == "Darwin":
             ws_options = kCGWindowListOptionOnScreenOnly
-            windows_list = CGWindowListCopyWindowInfo(ws_options, kCGNullWindowID)
+            windows_list = CGWindowListCopyWindowInfo(ws_options,
+                                                      kCGNullWindowID)
             maya_titles = {
                 x.get("kCGWindowName", u"Unknown")
-                for x in windows_list
-                if "Maya" in x["kCGWindowOwnerName"]
+                for x in windows_list if "Maya" in x["kCGWindowOwnerName"]
             }
 
             # duct tape for windows with empty title
@@ -81,8 +78,8 @@ def get_windows_titles():
             return titles
     except Exception as err:
         core_config.main_logger.error(
-            "Exception has occurred while pull windows titles: {}".format(str(err))
-        )
+            "Exception has occurred while pull windows titles: {}".format(
+                str(err)))
 
     return []
 
@@ -101,7 +98,10 @@ def createArgsParser():
     parser.add_argument("--testCases", required=True)
     parser.add_argument("--SPU", required=False, default=25, type=int)
     parser.add_argument("--fail_count", required=False, default=0, type=int)
-    parser.add_argument("--threshold", required=False, default=0.05, type=float)
+    parser.add_argument("--threshold",
+                        required=False,
+                        default=0.05,
+                        type=float)
 
     return parser
 
@@ -128,23 +128,25 @@ def check_licenses(res_path, maya_scenes, testType):
                 f.write(scene_file)
     except Exception as ex:
         core_config.main_logger.error(
-            "Error while deleting student license: {}".format(ex)
-        )
+            "Error while deleting student license: {}".format(ex))
 
 
 def launchMaya(cmdScriptPath, work_dir):
     system_pl = platform.system()
-    core_config.main_logger.info("Launch script on Maya ({})".format(cmdScriptPath))
+    core_config.main_logger.info(
+        "Launch script on Maya ({})".format(cmdScriptPath))
     os.chdir(work_dir)
-    p = psutil.Popen(
-        cmdScriptPath, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True
-    )
+    p = psutil.Popen(cmdScriptPath,
+                     stdout=subprocess.PIPE,
+                     stderr=subprocess.PIPE,
+                     shell=True)
 
     while True:
         try:
             p.communicate(timeout=40)
             window_titles = get_windows_titles()
-            core_config.main_logger.info("Found windows: {}".format(window_titles))
+            core_config.main_logger.info(
+                "Found windows: {}".format(window_titles))
         except (psutil.TimeoutExpired, subprocess.TimeoutExpired) as err:
             fatal_errors_titles = [
                 "Detected windows ERROR",
@@ -166,19 +168,16 @@ def launchMaya(cmdScriptPath, work_dir):
             error_window = set(fatal_errors_titles).intersection(window_titles)
             if error_window:
                 core_config.main_logger.error(
-                    "Error window found: {}".format(error_window)
-                )
+                    "Error window found: {}".format(error_window))
                 core_config.main_logger.warning(
-                    "Found windows: {}".format(window_titles)
-                )
+                    "Found windows: {}".format(window_titles))
                 rc = -1
 
                 if system_pl == "Windows":
                     try:
                         error_screen = pyscreenshot.grab()
                         error_screen.save(
-                            os.path.join(args.output, "error_screenshot.jpg")
-                        )
+                            os.path.join(args.output, "error_screenshot.jpg"))
                     except Exception as ex:
                         pass
 
@@ -186,8 +185,7 @@ def launchMaya(cmdScriptPath, work_dir):
 
                 child_processes = p.children()
                 core_config.main_logger.warning(
-                    "Child processes: {}".format(child_processes)
-                )
+                    "Child processes: {}".format(child_processes))
                 for ch in child_processes:
                     try:
                         ch.terminate()
@@ -196,14 +194,11 @@ def launchMaya(cmdScriptPath, work_dir):
                         time.sleep(10)
                         status = ch.status()
                         core_config.main_logger.error(
-                            "Process is alive: {}. Name: {}. Status: {}".format(
-                                ch, ch.name(), status
-                            )
-                        )
+                            "Process is alive: {}. Name: {}. Status: {}".
+                            format(ch, ch.name(), status))
                     except psutil.NoSuchProcess:
                         core_config.main_logger.warning(
-                            "Process is killed: {}".format(ch)
-                        )
+                            "Process is killed: {}".format(ch))
 
                 try:
                     p.terminate()
@@ -213,11 +208,10 @@ def launchMaya(cmdScriptPath, work_dir):
                     status = ch.status()
                     core_config.main_logger.error(
                         "Process is alive: {}. Name: {}. Status: {}".format(
-                            ch, ch.name(), status
-                        )
-                    )
+                            ch, ch.name(), status))
                 except psutil.NoSuchProcess:
-                    core_config.main_logger.warning("Process is killed: {}".format(ch))
+                    core_config.main_logger.warning(
+                        "Process is killed: {}".format(ch))
 
                 break
         else:
@@ -225,17 +219,13 @@ def launchMaya(cmdScriptPath, work_dir):
             break
 
     if args.testType in ["Athena"]:
-        subprocess.call(
-            [
-                sys.executable,
-                os.path.realpath(
-                    os.path.join(
-                        os.path.dirname(__file__), "extensions", args.testType + ".py"
-                    )
-                ),
-                args.output,
-            ]
-        )
+        subprocess.call([
+            sys.executable,
+            os.path.realpath(
+                os.path.join(os.path.dirname(__file__), "extensions",
+                             args.testType + ".py")),
+            args.output,
+        ])
     core_config.main_logger.info("Main func return : {}".format(rc))
     return rc
 
@@ -257,28 +247,26 @@ def main(args):
                     os.path.join(
                         os.path.abspath(args.output).replace("\\", "/"),
                         "test_cases.json",
-                    )
-                )
-            )
-        )
+                    ))))
     except Exception as e:
         core_config.logging.error("Can't load test_cases.json")
         core_config.main_logger.error(str(e))
         exit(-1)
 
     try:
-        with open(os.path.join(os.path.dirname(__file__), "base_functions.py")) as f:
+        with open(os.path.join(os.path.dirname(__file__),
+                               "base_functions.py")) as f:
             script = f.read()
     except OSError as e:
         core_config.main_logger.error(str(e))
         return 1
 
     if os.path.exists(
-        os.path.join(os.path.dirname(__file__), "extensions", args.testType + ".py")
-    ):
+            os.path.join(os.path.dirname(__file__), "extensions",
+                         args.testType + ".py")):
         with open(
-            os.path.join(os.path.dirname(__file__), "extensions", args.testType + ".py")
-        ) as f:
+                os.path.join(os.path.dirname(__file__), "extensions",
+                             args.testType + ".py")) as f:
             extension_script = f.read()
         script = script.split("# place for extension functions")
         script = script[0] + extension_script + script[1]
@@ -305,10 +293,13 @@ def main(args):
         file.write(script)
 
     if os.path.exists(os.path.join(os.path.dirname(__file__), args.testCases)):
-        with open(os.path.join(os.path.dirname(__file__), args.testCases)) as f:
+        with open(os.path.join(os.path.dirname(__file__),
+                               args.testCases)) as f:
             tc = f.read()
             test_cases = json.loads(tc)[args.testType]
-        necessary_cases = [item for item in cases if item["case"] in test_cases]
+        necessary_cases = [
+            item for item in cases if item["case"] in test_cases
+        ]
 
     core_config.main_logger.info("Create empty report files")
 
@@ -326,8 +317,7 @@ def main(args):
                 "common",
                 "img",
                 "error.jpg",
-            )
-        ),
+            )),
         os.path.join(work_dir, "Color", "failed.jpg"),
     )
 
@@ -337,12 +327,10 @@ def main(args):
     render_platform = {platform.system(), gpu}
 
     for case in cases:
-        if sum(
-            [
+        if sum([
                 render_platform & set(skip_conf) == set(skip_conf)
                 for skip_conf in case.get("skip_on", "")
-            ]
-        ):
+        ]):
             for i in case["skip_on"]:
                 skip_on = set(i)
                 if render_platform.intersection(skip_on) == skip_on:
@@ -361,11 +349,13 @@ def main(args):
             template["file_name"] = "failed.jpg"
             template["render_color_path"] = os.path.join("Color", "failed.jpg")
             template["test_group"] = args.testType
-            template["date_time"] = datetime.now().strftime("%m/%d/%Y %H:%M:%S")
+            template["date_time"] = datetime.now().strftime(
+                "%m/%d/%Y %H:%M:%S")
 
             with open(
-                os.path.join(work_dir, case["case"] + core_config.CASE_REPORT_SUFFIX),
-                "w",
+                    os.path.join(work_dir, case["case"] +
+                                 core_config.CASE_REPORT_SUFFIX),
+                    "w",
             ) as f:
                 f.write(json.dumps([template], indent=4))
 
@@ -379,9 +369,7 @@ def main(args):
 		  set PYTHONPATH=%cd%;PYTHONPATH
 		  set MAYA_SCRIPT_PATH=%cd%;%MAYA_SCRIPT_PATH%
 		  "{tool}" -command "python(\\"import base_functions\\");"
-		""".format(
-            tool=args.tool
-        )
+		""".format(tool=args.tool)
 
         cmdScriptPath = os.path.join(args.output, "script.bat")
         with open(cmdScriptPath, "w") as file:
@@ -393,9 +381,7 @@ def main(args):
 		  export PYTHONPATH=$PWD:$PYTHONPATH
 		  export MAYA_SCRIPT_PATH=$PWD:$MAYA_SCRIPT_PATH
 		  "{tool}" -command "python(\\"import base_functions\\");"
-		""".format(
-            tool=args.tool
-        )
+		""".format(tool=args.tool)
 
         cmdScriptPath = os.path.join(args.output, "script.sh")
         with open(cmdScriptPath, "w") as file:
@@ -405,17 +391,13 @@ def main(args):
     rc = launchMaya(cmdScriptPath, args.output)
 
     if args.testType in ["Athena"]:
-        subprocess.call(
-            [
-                sys.executable,
-                os.path.realpath(
-                    os.path.join(
-                        os.path.dirname(__file__), "extensions", args.testType + ".py"
-                    )
-                ),
-                args.output,
-            ]
-        )
+        subprocess.call([
+            sys.executable,
+            os.path.realpath(
+                os.path.join(os.path.dirname(__file__), "extensions",
+                             args.testType + ".py")),
+            args.output,
+        ])
     core_config.main_logger.info("Main func return : {}".format(rc))
     return rc
 
@@ -428,10 +410,7 @@ def group_failed(args):
                     os.path.join(
                         os.path.abspath(args.output).replace("\\", "/"),
                         "test_cases.json",
-                    )
-                )
-            )
-        )
+                    ))))
     except Exception as e:
         core_config.logging.error("Can't load test_cases.json")
         core_config.main_logger.error(str(e))
@@ -442,16 +421,17 @@ def group_failed(args):
             case["status"] = "skipped"
 
     with open(
-        os.path.join(
-            os.path.abspath(args.output).replace("\\", "/"), "test_cases.json"
-        ),
-        "w+",
+            os.path.join(
+                os.path.abspath(args.output).replace("\\", "/"),
+                "test_cases.json"),
+            "w+",
     ) as f:
         json.dump(cases, f, indent=4)
 
     rc = main(args)
     kill_process(PROCESS)
-    core_config.main_logger.info("Finish simpleRender with code: {}".format(rc))
+    core_config.main_logger.info(
+        "Finish simpleRender with code: {}".format(rc))
     exit(rc)
 
 
@@ -469,10 +449,12 @@ if __name__ == "__main__":
 
     system_pl = platform.system()
     if system_pl == "Windows":
-        script_dir = os.path.join(args.output, "..", "..", "..", "..", "scripts")
+        script_dir = os.path.join(args.output, "..", "..", "..", "..",
+                                  "scripts")
         script_path = os.path.join(script_dir, "build_rpr_cache.bat")
     elif system_pl == "Darwin":
-        script_dir = os.path.join(args.output, "..", "..", "..", "..", "scripts")
+        script_dir = os.path.join(args.output, "..", "..", "..", "..",
+                                  "scripts")
         script_path = os.path.join(script_dir, "build_rpr_cache.sh")
 
     core_config.main_logger.info("Build cache")
@@ -489,13 +471,11 @@ if __name__ == "__main__":
                     "Tests",
                     args.testType,
                     "test_cases.json",
-                )
-            ),
+                )),
             os.path.realpath(
                 os.path.join(
-                    os.path.abspath(args.output).replace("\\", "/"), "test_cases.json"
-                )
-            ),
+                    os.path.abspath(args.output).replace("\\", "/"),
+                    "test_cases.json")),
         )
     except:
         core_config.logging.error("Can't copy test_cases.json")
@@ -507,17 +487,16 @@ if __name__ == "__main__":
     while True:
         iteration += 1
 
-        core_config.main_logger.info(
-            "Try to run script in maya (#" + str(iteration) + ")"
-        )
+        core_config.main_logger.info("Try to run script in maya (#" +
+                                     str(iteration) + ")")
 
         rc = main(args)
 
         try:
             move(
                 os.path.join(
-                    os.path.abspath(args.output).replace("\\", "/"), "renderTool.log"
-                ),
+                    os.path.abspath(args.output).replace("\\", "/"),
+                    "renderTool.log"),
                 os.path.join(
                     os.path.abspath(args.output).replace("\\", "/"),
                     "renderTool" + str(iteration) + ".log",
@@ -533,10 +512,7 @@ if __name__ == "__main__":
                         os.path.join(
                             os.path.abspath(args.output).replace("\\", "/"),
                             "test_cases.json",
-                        )
-                    )
-                )
-            )
+                        ))))
         except Exception as e:
             core_config.logging.error("Can't load test_cases.json")
             core_config.main_logger.error(str(e))
@@ -556,14 +532,12 @@ if __name__ == "__main__":
             if case["status"] in ["active", "fail", "inprogress"]:
                 active_cases += 1
 
-        if (
-            active_cases == 0
-            or old_active_cases == active_cases
-            or iteration > len(cases)
-        ):
+        if (active_cases == 0 or old_active_cases == active_cases
+                or iteration > len(cases)):
             # exit script if base_functions don't change number of active cases
             kill_process(PROCESS)
-            core_config.main_logger.info("Finish simpleRender with code: {}".format(rc))
+            core_config.main_logger.info(
+                "Finish simpleRender with code: {}".format(rc))
             exit(rc)
 
         old_active_cases = active_cases
